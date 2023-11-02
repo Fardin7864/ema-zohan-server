@@ -20,7 +20,22 @@ app.use(cors(
 ));
 
 //custom middlewares
-// const veify = 
+const verify = (req, res, next) => { 
+    const token = req.cookies['ema-zohan'];
+    if (!token) {
+        return res.status(401).send({ message: "unauthorized" });
+      }
+    jwt.verify(token,process.env.API_SECRET_KEY,(err, decoded) => { 
+        if (err) {
+          res.status(401).send("Forbbiden!");
+        }
+        console.log(decoded.email)
+        res.user = decoded;
+        next();
+     })
+ }
+
+// app.use(verify)
 
 app.get("/", async (req, res) => {
   res.send("Ema-zohan Server is runnig!");
@@ -46,10 +61,11 @@ async function run() {
 
     //Auth related api
     app.post('/jwt',async (req,res) => {
-        const email = req?.body;
-        const token =  jwt.sign(email, process.env.API_SECRET_KEY,{expiresIn: '1h'})
+        const email = req.body.email
+        console.log(email)
+        const token =  jwt.sign({email}, process.env.API_SECRET_KEY,{expiresIn: '1h'})
         try {
-            console.log(token);
+            // console.log(token);
             res
             .cookie('ema-zohan', token,{httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict'})
             .send(token)
@@ -86,7 +102,7 @@ async function run() {
       }
     });
     //get data from cart
-    app.get("/cart", async (req, res) => {
+    app.get("/cart",verify, async (req, res) => {
       try {
         const result = await cartColl.find().toArray();
         res.send(result);
@@ -118,6 +134,37 @@ async function run() {
         res.status(500).send("Server Error!");
       }
     });
+    //Find cart data
+    app.get('/cartData',verify, async (req,res) => { 
+        console.log('from cartdata:',res.user)
+        const email = req.query.email;
+        if (res.user.email !== email) {
+             res.send('Unauthorized')
+        }
+        try {
+        const query = {email: email};
+        const result = await cartColl.find(query).toArray();
+        res.send(result)
+        } catch (error) {
+           console.log(error);
+           res.status(500).send('Server error!') 
+        }
+     })
+    
+    //total data count
+    app.get('/productsCounts', async (req,res) => { 
+        try {
+        const count = await cartColl.countDocuments()
+        if (count === null) {
+            throw new Error('Count is null');
+          }
+        console.log(count)
+        res.send({count})
+        } catch (error) {
+            console.log(error);
+            res.status(500).send('server error');
+        }
+     })
 
     // Send a ping to confirm a successful connection
     // await client.db("admin").command({ ping: 1 });

@@ -63,6 +63,42 @@ const client = new MongoClient(uri, {
             res.status(500).send("Server Error!")
         }
      })
+    
+     //get data from cart 
+     app.get('/cart',async (req,res) => { 
+        try {
+            const result = await cartColl.find().toArray();
+            res.send(result)
+        } catch (error) {
+            console.log(error);
+            res.status(500).send("Server Error!")
+        }
+      })
+    //add to cart
+    app.post('/cart',async (req,res) => { 
+        try {
+            const product = req.body;
+            const result = await cartColl.insertOne(product)
+            res.send(result);
+        } catch (error) {
+            console.log(error);
+            res.status(500).send("Server Error!")
+        }
+     })
+    
+     //Delete from cart
+     app.delete('/cart/:id',async (req,res) => { 
+        try {
+            const id = req.params.id;
+            const query = {_id: new ObjectId(id)};
+            const result = await cartColl.deleteOne(query);
+            res.status(200).send(result)
+        } catch (error) {
+            console.log(error)
+            res.status(500).send('Server Error!')
+        }
+      })
+
   
       // Send a ping to confirm a successful connection
       // await client.db("admin").command({ ping: 1 });

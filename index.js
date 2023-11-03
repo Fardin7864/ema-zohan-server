@@ -13,7 +13,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(cors(
     {
-        origin: ['http://localhost:5173'],
+        origin: ['http://localhost:5173','https://chat-app-1bf83.web.app'],
         credentials: true,
         methods: ["GET", "POST", "DELETE", "UPDATE"]
     }
@@ -29,7 +29,7 @@ const verify = (req, res, next) => {
         if (err) {
           res.status(401).send("Forbbiden!");
         }
-        console.log(decoded.email)
+        // console.log(decoded.email)
         res.user = decoded;
         next();
      })
@@ -62,7 +62,7 @@ async function run() {
     //Auth related api
     app.post('/jwt',async (req,res) => {
         const email = req.body.email
-        console.log(email)
+        // console.log(email)
         const token =  jwt.sign({email}, process.env.API_SECRET_KEY,{expiresIn: '1h'})
         try {
             // console.log(token);
@@ -80,7 +80,7 @@ async function run() {
         const result = await productsColl.find().toArray();
         res.send(result);
       } catch (error) {
-        console.log(error);
+        // console.log(error);
         res.send("Server Error");
       }
     });
@@ -97,7 +97,7 @@ async function run() {
           .toArray();
         res.send(result);
       } catch (error) {
-        console.log(error);
+        // console.log(error);
         res.status(500).send("Server Error!");
       }
     });
@@ -107,7 +107,7 @@ async function run() {
         const result = await cartColl.find().toArray();
         res.send(result);
       } catch (error) {
-        console.log(error);
+        // console.log(error);
         res.status(500).send("Server Error!");
       }
     });
@@ -118,7 +118,7 @@ async function run() {
         const result = await cartColl.insertOne(product);
         res.send(result);
       } catch (error) {
-        console.log(error);
+        // console.log(error);
         res.status(500).send("Server Error!");
       }
     });
@@ -130,13 +130,13 @@ async function run() {
         const result = await cartColl.deleteOne(query);
         res.status(200).send(result);
       } catch (error) {
-        console.log(error);
+        // console.log(error);
         res.status(500).send("Server Error!");
       }
     });
     //Find cart data
     app.get('/cartData',verify, async (req,res) => { 
-        console.log('from cartdata:',res.user)
+        // console.log('from cartdata:',res.user)
         const email = req.query.email;
         if (res.user.email !== email) {
              res.send('Unauthorized')
@@ -146,7 +146,7 @@ async function run() {
         const result = await cartColl.find(query).toArray();
         res.send(result)
         } catch (error) {
-           console.log(error);
+          //  console.log(error);
            res.status(500).send('Server error!') 
         }
      })
@@ -154,23 +154,23 @@ async function run() {
     //total data count
     app.get('/productsCounts', async (req,res) => { 
         try {
-        const count = await cartColl.countDocuments()
+        const count = await productsColl.countDocuments()
         if (count === null) {
             throw new Error('Count is null');
           }
-        console.log(count)
+        // console.log(count)
         res.send({count})
         } catch (error) {
-            console.log(error);
+            // console.log(error);
             res.status(500).send('server error');
         }
      })
 
     // Send a ping to confirm a successful connection
     // await client.db("admin").command({ ping: 1 });
-    console.log(
-      "Pinged your deployment. You successfully connected to MongoDB!"
-    );
+    // console.log(
+    //   "Pinged your deployment. You successfully connected to MongoDB!"
+    // );
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
@@ -179,5 +179,5 @@ async function run() {
 run().catch(console.dir);
 
 app.listen(port, () => {
-  console.log(`Server is runnig on port: ${port}`);
+  // console.log(`Server is runnig on port: ${port}`);
 });
